@@ -29,21 +29,21 @@ router.post("/register", async (req, res) => {
       name,
       email: email.toLowerCase(),
       password: hashedPassword,
-      otpCode,
-      otpExpires: Date.now() + 1000 * 60 * 10,
-      isVerified: false,
+      isVerified: true,
     });
 
-    await sendEmail({
+    sendEmail({
       to: user.email,
       subject: "Your FinanceFlow OTP Code",
       html: `
-        <h2>FinanceFlow Verification Code</h2>
-        <p>Hello ${user.name},</p>
-        <p>Your OTP code is:</p>
-        <h1 style="letter-spacing:4px;">${otpCode}</h1>
-        <p>This code expires in 10 minutes.</p>
-      `,
+    <h2>FinanceFlow Verification Code</h2>
+    <p>Hello ${user.name},</p>
+    <p>Your OTP code is:</p>
+    <h1 style="letter-spacing:4px;">${otpCode}</h1>
+    <p>This code expires in 10 minutes.</p>
+  `,
+    }).catch((error) => {
+      console.error("OTP email failed:", error.message);
     });
 
     res.status(201).json({
@@ -87,15 +87,18 @@ router.post("/resend-verification", async (req, res) => {
 
     await user.save();
 
-    await sendEmail({
+    sendEmail({
       to: user.email,
       subject: "Your FinanceFlow OTP Code",
       html: `
-        <h2>New OTP Code</h2>
-        <p>Your new verification code is:</p>
-        <h1 style="letter-spacing:4px;">${otpCode}</h1>
-        <p>Expires in 10 minutes.</p>
-      `,
+    <h2>FinanceFlow Verification Code</h2>
+    <p>Hello ${user.name},</p>
+    <p>Your OTP code is:</p>
+    <h1 style="letter-spacing:4px;">${otpCode}</h1>
+    <p>This code expires in 10 minutes.</p>
+  `,
+    }).catch((error) => {
+      console.error("OTP email failed:", error.message);
     });
 
     res.json({
@@ -160,13 +163,6 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    if (!user.isVerified) {
-      return res.status(403).json({
-        success: false,
-        message: "Please verify your email before logging in.",
-      });
-    }
-
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -223,17 +219,22 @@ router.post("/forgot-password", async (req, res) => {
 
     const resetLink = `${process.env.APP_URL}/reset-password.html?token=${resetToken}`;
 
-    await sendEmail({
+    sendEmail({
       to: user.email,
       subject: "Reset Your Password - Financial Tracker",
       html: `
-        <h2>Password Reset</h2>
-        <p>Hello ${user.name || "User"},</p>
-        <p>You requested to reset your password.</p>
-        <p>This link will expire in 15 minutes.</p>
-        <a href="${resetLink}">Reset Password</a>
-        <p>${resetLink}</p>
-      `,
+    <h2>Password Reset</h2>
+    <p>Hello ${user.name || "User"},</p>
+    <p>You requested to reset your password.</p>
+    <p>This link will expire in 15 minutes.</p>
+    <a href="${resetLink}" 
+       style="display:inline-block;padding:12px 18px;background:#dc2626;color:#fff;text-decoration:none;border-radius:8px;">
+       Reset Password
+    </a>
+    <p>${resetLink}</p>
+  `,
+    }).catch((error) => {
+      console.error("Reset email failed:", error.message);
     });
 
     res.json({
