@@ -8,6 +8,7 @@ const sendEmail = require("../utils/sendEmail");
 const User = require("../models/User");
 
 const router = express.Router();
+const protect = require("./middleware");
 
 router.post("/resend-verification", async (req, res) => {
   try {
@@ -254,8 +255,6 @@ router.post("/login", async (req, res) => {
     });
   }
 });
-
-const protect = require("./middleware");
 
 // UPDATE PROFILE
 router.put("/profile", protect, async (req, res) => {
