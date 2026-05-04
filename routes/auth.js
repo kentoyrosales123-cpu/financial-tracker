@@ -18,46 +18,43 @@ router.post("/resend-verification", async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "Email not found.",
+        message: "User not found.",
       });
     }
 
     if (user.isVerified) {
       return res.status(400).json({
         success: false,
-        message: "This account is already verified.",
+        message: "Account already verified.",
       });
     }
 
-    const verificationToken = crypto.randomBytes(32).toString("hex");
-    user.verificationToken = verificationToken;
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    user.otpCode = otpCode;
+    user.otpExpires = Date.now() + 1000 * 60 * 10;
+
     await user.save();
 
-    const verifyLink = `${process.env.APP_URL}/api/auth/verify-email/${verificationToken}`;
-
-    await sendEmail({
+    sendEmail({
       to: user.email,
-      subject: "Resend Verification - Financial Tracker",
+      subject: "Your FinanceFlow OTP Code",
       html: `
-        <h2>Email Verification</h2>
-        <p>Hello ${user.name || "User"},</p>
-        <p>Please verify your account by clicking the button below:</p>
-        <a href="${verifyLink}" style="display:inline-block;padding:12px 18px;background:#2563eb;color:#fff;text-decoration:none;border-radius:8px;">
-          Verify Email
-        </a>
-        <p>Or copy this link:</p>
-        <p>${verifyLink}</p>
+        <h2>New OTP Code</h2>
+        <p>Your new verification code is:</p>
+        <h1 style="letter-spacing:4px;">${otpCode}</h1>
+        <p>Expires in 10 minutes.</p>
       `,
-    });
+    }).catch((err) => console.error("Resend OTP error:", err.message));
 
     res.json({
       success: true,
-      message: "Verification email resent. Please check your inbox.",
+      message: "OTP resent successfully.",
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Failed to resend verification email.",
+      message: "Failed to resend OTP.",
     });
   }
 });
@@ -146,62 +143,34 @@ router.post("/reset-password/:token", async (req, res) => {
 });
 
 // REGISTER
-router.post("/register", async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
+const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const existingUser = await User.findOne({ email });
+const user = await User.create({
+  name,
+  email,
+  password: hashedPassword,
+  otpCode,
+  otpExpires: Date.now() + 1000 * 60 * 10,
+  isVerified: false,
+});
 
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "Email already registered.",
-      });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const verificationToken = crypto.randomBytes(32).toString("hex");
-
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      verificationToken,
-      isVerified: false,
-    });
-
-    const verifyLink = `${process.env.APP_URL}/api/auth/verify-email/${verificationToken}`;
-
-    res.status(201).json({
-      success: true,
-      message:
-        "Registration successful. Please check your email to verify your account.",
-    });
-
-    sendEmail({
-      to: user.email,
-      subject: "Verify your Financial Tracker account",
-      html: `
-    <h2>Email Verification</h2>
-    <p>Hello ${user.name || "User"},</p>
-    <p>Thank you for registering. Please verify your email by clicking the button below:</p>
-    <a href="${verifyLink}" 
-       style="display:inline-block;padding:12px 18px;background:#2563eb;color:white;text-decoration:none;border-radius:8px;">
-       Verify Email
-    </a>
-    <p>If the button does not work, copy this link:</p>
-    <p>${verifyLink}</p>
+sendEmail({
+  to: user.email,
+  subject: "Your FinanceFlow OTP Code",
+  html: `
+    <h2>FinanceFlow Verification Code</h2>
+    <p>Hello ${user.name},</p>
+    <p>Your OTP code is:</p>
+    <h1 style="letter-spacing:4px;">${otpCode}</h1>
+    <p>This code expires in 10 minutes.</p>
   `,
-    }).catch((error) => {
-      console.error("Verification email failed:", error.message);
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: "Registration failed.",
-    });
-  }
+}).catch((error) => {
+  console.error("OTP email failed:", error.message);
+});
+
+res.status(201).json({
+  success: true,
+  message: "Registration successful. Please enter the OTP sent to your email.",
 });
 
 // VERIFY EMAIL
@@ -353,6 +322,41 @@ router.put("/change-password", protect, async (req, res) => {
     res
       .status(500)
       .json({ success: false, message: "Password change failed." });
+  }
+});
+
+router.post("/verify-otp", async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const user = await User.findOne({
+      email: email.toLowerCase(),
+      otpCode: otp,
+      otpExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP.",
+      });
+    }
+
+    user.isVerified = true;
+    user.otpCode = undefined;
+    user.otpExpires = undefined;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Account verified successfully. You may now login.",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "OTP verification failed.",
+    });
   }
 });
 

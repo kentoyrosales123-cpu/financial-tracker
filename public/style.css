@@ -1570,3 +1570,14 @@ body {
   background: #fff1f2 !important;
   color: #be123c !important;
 }
+.secondary-btn {
+  margin-top: 10px;
+  background: #eef2ff;
+  color: #0b63f6;
+  font-weight: 700;
+}
+
+.secondary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -536,16 +536,6 @@ function toggleProfileMenu(e) {
   const menu = document.getElementById("profileDropdown");
   if (menu) menu.classList.toggle("hidden");
 }
-document.addEventListener("click", (e) => {
-  const profileMenu = document.querySelector(".profile-menu");
-  const dropdown = document.getElementById("profileDropdown");
-
-  if (!profileMenu || !dropdown) return;
-
-  if (!profileMenu.contains(e.target)) {
-    dropdown.classList.add("hidden");
-  }
-});
 
 document.addEventListener("click", (e) => {
   const profileMenu = document.querySelector(".profile-menu");
@@ -588,8 +578,88 @@ function showTab(tabId) {
   if (selected) selected.classList.add("active-tab");
 }
 
+async function resendOTP() {
+  const btn = document.getElementById("resendBtn");
+
+  try {
+    const email = document.getElementById("otpEmail").value;
+
+    if (!email) {
+      setAuthMessage("Email is required.");
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Sending...";
+
+    await request(`${API}/auth/resend-verification`, {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+
+    setAuthMessage("OTP resent successfully!", true);
+    startResendCountdown();
+  } catch (error) {
+    setAuthMessage(error.message);
+
+    btn.disabled = false;
+    btn.textContent = "Resend Code";
+  }
+}
+
+function startResendCountdown() {
+  const btn = document.getElementById("resendBtn");
+
+  let seconds = 30;
+
+  btn.disabled = true;
+
+  const interval = setInterval(() => {
+    btn.textContent = `Resend in ${seconds}s`;
+    seconds--;
+
+    if (seconds < 0) {
+      clearInterval(interval);
+      btn.disabled = false;
+      btn.textContent = "Resend Code";
+    }
+  }, 1000);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   requireAuth();
+  const savedOtpEmail = localStorage.getItem("otpEmail");
+
+  if (savedOtpEmail) {
+    const otpEmailInput = document.getElementById("otpEmail");
+
+    if (otpEmailInput) {
+      otpEmailInput.value = savedOtpEmail;
+    }
+  }
+
+  const otpForm = document.getElementById("otpForm");
+
+  if (otpForm) {
+    otpForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      try {
+        const data = await request(`${API}/auth/verify-otp`, {
+          method: "POST",
+          body: JSON.stringify({
+            email: document.getElementById("otpEmail").value,
+            otp: document.getElementById("otpCode").value,
+          }),
+        });
+
+        setAuthMessage(data.message, true);
+        switchAuth("login");
+      } catch (error) {
+        setAuthMessage(error.message);
+      }
+    });
+  }
 
   const forgotPasswordForm = document.getElementById("forgotPasswordForm");
   if (forgotPasswordForm) {
@@ -686,8 +756,20 @@ document.addEventListener("DOMContentLoaded", () => {
           }),
         });
 
+        const email = document.getElementById("registerEmail").value;
+
         setAuthMessage(data.message, true);
-        switchAuth("login");
+
+        // save email temporarily
+        localStorage.setItem("otpEmail", email);
+
+        document.querySelectorAll(".auth-form").forEach((form) => {
+          form.classList.add("hidden");
+        });
+
+        document.getElementById("otpForm").classList.remove("hidden");
+        document.getElementById("otpEmail").value = email;
+        startResendCountdown();
       } catch (error) {
         setAuthMessage(error.message);
       } finally {
