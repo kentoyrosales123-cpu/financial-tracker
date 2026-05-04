@@ -54,9 +54,6 @@
             Forgot Password?
           </button>
           <span class="auth-divider">•</span>
-          <button type="button" onclick="showResendVerification()">
-            Resend Verification Email
-          </button>
         </div>
 
         <form id="forgotPasswordForm" class="auth-form hidden">
@@ -74,14 +71,12 @@
         </form>
 
         <form id="resendVerificationForm" class="auth-form hidden">
-          <h2>Resend Verification</h2>
           <input
             type="email"
             id="resendEmail"
             placeholder="Enter your email"
             required
           />
-          <button type="submit">Resend Verification Email</button>
           <button type="button" onclick="switchAuth('login')">
             Back to Login
           </button>
