@@ -8,6 +8,9 @@
   --muted: #7b8794;
   --green: #19b36b;
   --red: #ef4444;
+  --border: #d1d5db;
+  --danger: #dc2626;
+  --success: #16a34a;
   --shadow: 0 15px 35px rgba(11, 31, 61, 0.12);
 }
 
@@ -1133,7 +1136,8 @@ body {
 .bank-app {
   max-width: 430px;
   min-height: 100vh;
-  padding: 28px 20px 110px;
+  padding: 28px 20px 180px;
+  box-sizing: border-box;
   background:
     radial-gradient(
       circle at top right,
@@ -1291,6 +1295,9 @@ body {
 
 /* BOTTOM NAV */
 .bottom-nav {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
   width: min(390px, calc(100% - 34px));
   bottom: 18px;
   padding: 10px;
@@ -1298,6 +1305,7 @@ body {
   background: rgba(7, 22, 41, 0.96);
   backdrop-filter: blur(18px);
   box-shadow: 0 22px 45px rgba(7, 22, 41, 0.35);
+  z-index: 90;
 }
 
 .bottom-nav button {
@@ -1339,6 +1347,7 @@ body {
 
 #analyticsTab {
   padding-top: 8px;
+  padding-bottom: 40px;
 }
 
 #analyticsTab .section-title {
