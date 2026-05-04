@@ -1,17 +1,14 @@
+require("dotenv").config();
+
 const express = require("express");
-const http = require("http");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
-const socketIo = require("socket.io"); // Import socket.io
 
 const authRoutes = require("./routes/auth");
 const financeRoutes = require("./routes/finance");
 
 const app = express();
-const server = http.createServer(app); // Create HTTP server
-const io = socketIo(server); // Initialize Socket.io with the server
-
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
@@ -34,27 +31,12 @@ app.use((req, res) => {
   res.status(404).json({ success: false, message: "Route not found" });
 });
 
-// MongoDB Connection
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("MongoDB connected");
-    server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
   .catch((error) => {
     console.error("MongoDB connection error:", error.message);
   });
-
-// Handle Socket.io connection
-io.on("connection", (socket) => {
-  console.log("New client connected");
-
-  // Listen for balance updates and broadcast to all clients
-  socket.on("updateBalance", (newBalance) => {
-    io.emit("balanceUpdated", newBalance); // Emit to all connected clients
-  });
-
-  socket.on("disconnect", () => {
-    console.log("Client disconnected");
-  });
-});

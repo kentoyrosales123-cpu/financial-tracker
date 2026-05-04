@@ -55,14 +55,6 @@ async function request(url, options = {}) {
   return data;
 }
 
-const socket = io("http://localhost:3000"); // Connect to your server's socket
-
-// Listen for the balance update from the server
-socket.on("balanceUpdated", (newBalance) => {
-  document.getElementById("currentBalance").textContent =
-    `₱${newBalance.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-});
-
 function switchAuth(type) {
   document
     .querySelectorAll(".tab-btn")
@@ -596,6 +588,29 @@ document.addEventListener("DOMContentLoaded", () => {
     if (otpEmailInput) {
       otpEmailInput.value = savedOtpEmail;
     }
+  }
+
+  const otpForm = document.getElementById("otpForm");
+
+  if (otpForm) {
+    otpForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      try {
+        const data = await request(`${API}/auth/verify-otp`, {
+          method: "POST",
+          body: JSON.stringify({
+            email: document.getElementById("otpEmail").value,
+            otp: document.getElementById("otpCode").value,
+          }),
+        });
+
+        setAuthMessage(data.message, true);
+        switchAuth("login");
+      } catch (error) {
+        setAuthMessage(error.message);
+      }
+    });
   }
 
   const forgotPasswordForm = document.getElementById("forgotPasswordForm");

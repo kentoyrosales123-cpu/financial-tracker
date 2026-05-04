@@ -94,13 +94,6 @@ router.post("/transactions", async (req, res) => {
       ...req.body,
       user: req.user.id,
     });
-
-    // Calculate updated balance
-    const updatedBalance = calculateUpdatedBalance(); // Function to calculate current balance
-
-    // Emit updated balance to all connected clients
-    io.emit("balanceUpdated", updatedBalance); // Emit to all clients
-
     res.status(201).json({ success: true, transaction });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
