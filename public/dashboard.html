@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FinanceFlow | Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <main class="bank-app">
+      <!-- ================= HOME TAB ================= -->
+      <section id="homeTab" class="app-tab active-tab">
+        <!-- HEADER -->
+        <header class="bank-header">
+          <div>
+            <p>Welcome back</p>
+            <h2 id="userGreeting">User</h2>
+          </div>
+
+          <div class="profile-menu">
+            <button onclick="toggleProfileMenu(event)">👤</button>
+
+            <div id="profileDropdown" class="profile-dropdown hidden">
+              <strong id="profileName">User</strong>
+              <p id="profileEmail">user@email.com</p>
+
+              <button onclick="alert('Settings coming soon')">
+                ⚙️ Settings
+              </button>
+              <button onclick="logout()">🚪 Logout</button>
+            </div>
+          </div>
+        </header>
+
+        <!-- BALANCE -->
+        <section class="balance-card dual-balance-card">
+          <p>Available Balance</p>
+          <h1 id="currentBalance">₱0.00</h1>
+
+          <div class="balance-divider"></div>
+
+          <div class="savings-row">
+            <div>
+              <span>Total Savings</span>
+              <h3 id="totalSavings">₱0.00</h3>
+            </div>
+            <div class="bank-chip">VISA</div>
+          </div>
+
+          <div class="card-row">
+            <span>•••• 4812</span>
+            <span>FinanceFlow</span>
+          </div>
+        </section>
+
+        <!-- ACTIONS -->
+        <section class="quick-actions">
+          <button onclick="openModal('transactionModal', 'income')">
+            + Income
+          </button>
+          <button onclick="openModal('transactionModal', 'expense')">
+            − Expense
+          </button>
+          <button onclick="openModal('transactionModal', 'savings')">
+            💰 Save
+          </button>
+        </section>
+
+        <!-- SUMMARY -->
+        <section class="summary-grid">
+          <div class="summary-card income">
+            <p>Income</p>
+            <h3 id="totalIncome">₱0</h3>
+          </div>
+          <div class="summary-card expense">
+            <p>Expenses</p>
+            <h3 id="totalExpenses">₱0</h3>
+          </div>
+        </section>
+      </section>
+
+      <!-- ================= TRANSACTIONS TAB ================= -->
+      <section id="transactionsTab" class="app-tab">
+        <section class="transactions">
+          <h3>Recent Activity</h3>
+          <div id="transactionList"></div>
+        </section>
+      </section>
+
+      <!-- ================= ANALYTICS TAB ================= -->
+      <section id="analyticsTab" class="app-tab">
+        <div class="section-title">
+          <h2>Analytics</h2>
+          <p>Your monthly financial health</p>
+        </div>
+
+        <div class="budget-card">
+          <p>Monthly Budget</p>
+          <h2 id="budgetUsedText">₱0 / ₱10,000</h2>
+
+          <div class="progress-bar">
+            <div id="budgetProgress" class="progress-fill"></div>
+          </div>
+
+          <span id="budgetPercentText">0% used</span>
+        </div>
+
+        <div class="analytics-card">
+          <h3>Category Spending</h3>
+          <div id="categorySpendingList"></div>
+        </div>
+
+        <div class="analytics-card">
+          <h3>Savings Goal Progress</h3>
+          <h2 id="savingsGoalText">₱0 / ₱25,000</h2>
+
+          <div class="progress-bar">
+            <div id="savingsProgress" class="progress-fill savings-fill"></div>
+          </div>
+
+          <span id="savingsPercentText">0%</span>
+        </div>
+
+        <div class="analytics-card">
+          <h3>Insights</h3>
+          <div id="financialInsights"></div>
+        </div>
+      </section>
+
+      <!-- ================= PROFILE TAB ================= -->
+      <section id="profileTab" class="app-tab">
+        <div class="profile-page-card">
+          <h2 id="profileNamePage">User</h2>
+          <p id="profileEmailPage">user@email.com</p>
+
+          <form id="profileForm" class="profile-form">
+            <label>Full Name</label>
+            <input id="editProfileName" type="text" required />
+
+            <label>Email</label>
+            <input id="editProfileEmail" type="email" required />
+
+            <button type="submit">💾 Save Profile</button>
+          </form>
+
+          <hr class="profile-divider" />
+
+          <form id="changePasswordForm" class="profile-form">
+            <label>Current Password</label>
+            <input id="currentPassword" type="password" required />
+
+            <label>New Password</label>
+            <input id="newPassword" type="password" minlength="6" required />
+
+            <label>Confirm Password</label>
+            <input
+              id="confirmPassword"
+              type="password"
+              minlength="6"
+              required
+            />
+
+            <button type="submit">🔐 Change Password</button>
+          </form>
+
+          <button onclick="logout()" class="logout-profile-btn">
+            🚪 Sign Out
+          </button>
+        </div>
+      </section>
+
+      <!-- ================= NAV ================= -->
+      <nav class="bottom-nav">
+        <button onclick="showTab('homeTab')">🏠 Home</button>
+        <button onclick="showTab('analyticsTab')">📊 Analytics</button>
+        <button onclick="showTab('transactionsTab')">💳 Activity</button>
+        <button onclick="showTab('profileTab')">👤 Profile</button>
+      </nav>
+    </main>
+
+    <div id="transactionModal" class="modal hidden">
+      <form class="modal-card" id="transactionForm">
+        <button type="button" class="close-btn" onclick="closeModals()">
+          ×
+        </button>
+        <h2 id="transactionModalTitle">Add Transaction</h2>
+        <input type="hidden" id="transactionId" />
+        <input type="hidden" id="transactionType" />
+        <label>Title</label><input id="transactionTitle" required />
+        <label>Amount</label
+        ><input
+          id="transactionAmount"
+          type="number"
+          min="0"
+          step="0.01"
+          required
+        />
+        <label>Category</label
+        ><input
+          id="transactionCategory"
+          placeholder="Salary, Food, Transport..."
+        />
+        <label>Date</label><input id="transactionDate" type="date" />
+        <label>Notes</label><textarea id="transactionNotes"></textarea>
+        <button class="primary-btn">Save Transaction</button>
+      </form>
+    </div>
+
+    <div id="debtModal" class="modal hidden">
+      <form class="modal-card" id="debtForm">
+        <button type="button" class="close-btn" onclick="closeModals()">
+          ×
+        </button>
+        <h2 id="debtModalTitle">Add Debt</h2>
+        <input type="hidden" id="debtId" />
+        <input type="hidden" id="debtType" />
+        <label id="debtNameLabel">Name</label><input id="debtName" required />
+        <label>Contact Number</label><input id="debtContact" />
+        <label>Amount Borrowed</label
+        ><input id="debtBorrowed" type="number" min="0" step="0.01" required />
+        <label>Amount Paid</label
+        ><input id="debtPaid" type="number" min="0" step="0.01" value="0" />
+        <label>Due Date</label><input id="debtDueDate" type="date" />
+        <label>Notes</label><textarea id="debtNotes"></textarea>
+        <button class="primary-btn">Save Debt</button>
+      </form>
+    </div>
+
+    <div id="paymentModal" class="modal hidden">
+      <form class="modal-card" id="paymentForm">
+        <button type="button" class="close-btn" onclick="closeModals()">
+          ×
+        </button>
+        <h2>Add Payment</h2>
+        <input type="hidden" id="paymentDebtId" />
+        <label>Payment Amount</label
+        ><input id="paymentAmount" type="number" min="0" step="0.01" required />
+        <label>Date</label><input id="paymentDate" type="date" />
+        <label>Notes</label><textarea id="paymentNotes"></textarea>
+        <button class="primary-btn">Save Payment</button>
+      </form>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FinanceFlow | Login</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="auth-body">
+    <main class="auth-wrapper">
+      <section class="auth-brand">
+        <div class="logo">₱</div>
+        <h1>FinanceFlow Bank</h1>
+        <p>
+          Track your income, expenses, savings, debts, and people who owe you
+          money in one clean dashboard.
+        </p>
+        <div class="brand-card">
+          <span>Total Control</span>
+          <strong>Income • Expenses • Debts • Savings</strong>
+        </div>
+      </section>
+
+      <section class="auth-card">
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchAuth('login')">
+            Login
+          </button>
+          <button class="tab-btn" onclick="switchAuth('register')">
+            Register
+          </button>
+        </div>
+
+        <form id="loginForm" class="auth-form">
+          <h2>Welcome back</h2>
+          <label>Email</label>
+          <input
+            type="email"
+            id="loginEmail"
+            required
+            placeholder="your@email.com"
+          />
+          <label>Password</label>
+          <input
+            type="password"
+            id="loginPassword"
+            required
+            placeholder="Enter password"
+          />
+          <button type="submit" class="primary-btn">Login</button>
+        </form>
+        <div class="auth-extra">
+          <button type="button" onclick="showForgotPassword()">
+            Forgot Password?
+          </button>
+          <span class="auth-divider">•</span>
+          <button type="button" onclick="showResendVerification()">
+            Resend Verification Email
+          </button>
+        </div>
+
+        <form id="forgotPasswordForm" class="auth-form hidden">
+          <h2>Forgot Password</h2>
+          <input
+            type="email"
+            id="forgotEmail"
+            placeholder="Enter your email"
+            required
+          />
+          <button type="submit">Send Reset Link</button>
+          <button type="button" onclick="switchAuth('login')">
+            Back to Login
+          </button>
+        </form>
+
+        <form id="resendVerificationForm" class="auth-form hidden">
+          <h2>Resend Verification</h2>
+          <input
+            type="email"
+            id="resendEmail"
+            placeholder="Enter your email"
+            required
+          />
+          <button type="submit">Resend Verification Email</button>
+          <button type="button" onclick="switchAuth('login')">
+            Back to Login
+          </button>
+        </form>
+
+        <form id="registerForm" class="auth-form hidden">
+          <h2>Create account</h2>
+          <label>Full Name</label>
+          <input
+            type="text"
+            id="registerName"
+            required
+            placeholder="Your name"
+          />
+          <label>Email</label>
+          <input
+            type="email"
+            id="registerEmail"
+            required
+            placeholder="your@email.com"
+          />
+          <label>Password</label>
+          <input
+            type="password"
+            id="registerPassword"
+            required
+            minlength="6"
+            placeholder="Minimum 6 characters"
+          />
+          <button type="submit" class="primary-btn">Register</button>
+        </form>
+
+        <p id="authMessage" class="message"></p>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
