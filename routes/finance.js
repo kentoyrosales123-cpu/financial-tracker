@@ -35,7 +35,7 @@ router.get("/summary", async (req, res) => {
     const totalOwedToMe = debts
       .filter((d) => d.debtType === "owes_me")
       .reduce((s, d) => s + Math.max(d.amountBorrowed - d.amountPaid, 0), 0);
-    const currentBalance = totalIncome - totalExpenses;
+    const currentBalance = totalIncome - totalExpenses - totalSavings;
     const netWorth =
       currentBalance + totalSavings + totalOwedToMe - totalDebtsIOwe;
 
