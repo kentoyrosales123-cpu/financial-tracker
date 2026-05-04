@@ -23,7 +23,6 @@ router.post("/register", async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
 
     const user = await User.create({
       name,
@@ -32,119 +31,14 @@ router.post("/register", async (req, res) => {
       isVerified: true,
     });
 
-    sendEmail({
-      to: user.email,
-      subject: "Your FinanceFlow OTP Code",
-      html: `
-    <h2>FinanceFlow Verification Code</h2>
-    <p>Hello ${user.name},</p>
-    <p>Your OTP code is:</p>
-    <h1 style="letter-spacing:4px;">${otpCode}</h1>
-    <p>This code expires in 10 minutes.</p>
-  `,
-    }).catch((error) => {
-      console.error("OTP email failed:", error.message);
-    });
-
     res.status(201).json({
       success: true,
-      message:
-        "Registration successful. Please enter the OTP sent to your email.",
+      message: "Registration successful. You may now login.",
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: "Registration failed.",
-    });
-  }
-});
-
-// RESEND OTP
-router.post("/resend-verification", async (req, res) => {
-  try {
-    const { email } = req.body;
-
-    const user = await User.findOne({ email: email.toLowerCase() });
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found.",
-      });
-    }
-
-    if (user.isVerified) {
-      return res.status(400).json({
-        success: false,
-        message: "Account already verified.",
-      });
-    }
-
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-    user.otpCode = otpCode;
-    user.otpExpires = Date.now() + 1000 * 60 * 10;
-
-    await user.save();
-
-    sendEmail({
-      to: user.email,
-      subject: "Your FinanceFlow OTP Code",
-      html: `
-    <h2>FinanceFlow Verification Code</h2>
-    <p>Hello ${user.name},</p>
-    <p>Your OTP code is:</p>
-    <h1 style="letter-spacing:4px;">${otpCode}</h1>
-    <p>This code expires in 10 minutes.</p>
-  `,
-    }).catch((error) => {
-      console.error("OTP email failed:", error.message);
-    });
-
-    res.json({
-      success: true,
-      message: "OTP resent successfully.",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to resend OTP.",
-    });
-  }
-});
-
-// VERIFY OTP
-router.post("/verify-otp", async (req, res) => {
-  try {
-    const { email, otp } = req.body;
-
-    const user = await User.findOne({
-      email: email.toLowerCase(),
-      otpCode: otp,
-      otpExpires: { $gt: Date.now() },
-    });
-
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid or expired OTP.",
-      });
-    }
-
-    user.isVerified = true;
-    user.otpCode = undefined;
-    user.otpExpires = undefined;
-
-    await user.save();
-
-    res.json({
-      success: true,
-      message: "Account verified successfully. You may now login.",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "OTP verification failed.",
     });
   }
 });
@@ -218,24 +112,6 @@ router.post("/forgot-password", async (req, res) => {
     await user.save();
 
     const resetLink = `${process.env.APP_URL}/reset-password.html?token=${resetToken}`;
-
-    sendEmail({
-      to: user.email,
-      subject: "Reset Your Password - Financial Tracker",
-      html: `
-    <h2>Password Reset</h2>
-    <p>Hello ${user.name || "User"},</p>
-    <p>You requested to reset your password.</p>
-    <p>This link will expire in 15 minutes.</p>
-    <a href="${resetLink}" 
-       style="display:inline-block;padding:12px 18px;background:#dc2626;color:#fff;text-decoration:none;border-radius:8px;">
-       Reset Password
-    </a>
-    <p>${resetLink}</p>
-  `,
-    }).catch((error) => {
-      console.error("Reset email failed:", error.message);
-    });
 
     res.json({
       success: true,
