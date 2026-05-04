@@ -55,6 +55,14 @@ async function request(url, options = {}) {
   return data;
 }
 
+const socket = io("http://localhost:3000"); // Connect to your server's socket
+
+// Listen for the balance update from the server
+socket.on("balanceUpdated", (newBalance) => {
+  document.getElementById("currentBalance").textContent =
+    `₱${newBalance.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+});
+
 function switchAuth(type) {
   document
     .querySelectorAll(".tab-btn")
