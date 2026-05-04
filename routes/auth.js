@@ -172,26 +172,28 @@ router.post("/register", async (req, res) => {
 
     const verifyLink = `${process.env.APP_URL}/api/auth/verify-email/${verificationToken}`;
 
-    await sendEmail({
-      to: user.email,
-      subject: "Verify your Financial Tracker account",
-      html: `
-        <h2>Email Verification</h2>
-        <p>Hello ${user.name || "User"},</p>
-        <p>Thank you for registering. Please verify your email by clicking the button below:</p>
-        <a href="${verifyLink}" 
-           style="display:inline-block;padding:12px 18px;background:#2563eb;color:white;text-decoration:none;border-radius:8px;">
-           Verify Email
-        </a>
-        <p>If the button does not work, copy this link:</p>
-        <p>${verifyLink}</p>
-      `,
-    });
-
     res.status(201).json({
       success: true,
       message:
         "Registration successful. Please check your email to verify your account.",
+    });
+
+    sendEmail({
+      to: user.email,
+      subject: "Verify your Financial Tracker account",
+      html: `
+    <h2>Email Verification</h2>
+    <p>Hello ${user.name || "User"},</p>
+    <p>Thank you for registering. Please verify your email by clicking the button below:</p>
+    <a href="${verifyLink}" 
+       style="display:inline-block;padding:12px 18px;background:#2563eb;color:white;text-decoration:none;border-radius:8px;">
+       Verify Email
+    </a>
+    <p>If the button does not work, copy this link:</p>
+    <p>${verifyLink}</p>
+  `,
+    }).catch((error) => {
+      console.error("Verification email failed:", error.message);
     });
   } catch (error) {
     console.error(error);
